@@ -18,6 +18,29 @@
                 android:layout_height="?attr/actionBarSize"
                 app:navigationIcon="?attr/homeAsUpIndicator"
                 app:title="@string/assets_manager_title" />
+                
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/searchLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Search resources…"
+            android:visibility="gone"
+            app:endIconMode="clear_text"
+            app:startIconDrawable="@drawable/ic_search_24">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/searchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1"
+                android:imeOptions="actionSearch" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
@@ -66,6 +89,15 @@
             android:text="@string/assets_manager_nofiles_body"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp" />
+            
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreateEmpty"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Create Resource"
+            app:icon="@drawable/ic_mtrl_add" />
 
     </LinearLayout>
 

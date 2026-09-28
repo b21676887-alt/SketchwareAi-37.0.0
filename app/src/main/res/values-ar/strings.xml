@@ -3772,5 +3772,10 @@
     <string name="btn_cancel">إلغاء</string>
     <string name="btn_generate">توليد</string>
     <string name="btn_convert">تحويل</string>
-
+    <string name="title_explorer_project_category">أستكشاف المشروع</string>
+    <string name="pref_enable_treeview_title">عرض الشجرة</string>
+    <string name="pref_enable_treeview_summary">عرض ملفات المشروع في بنية شجرية هرمية</string>
+    <string name="title_backuprestore_category">النسخ الاحتياطي و الاستعادة</string>
+    <string name="title_versioncontrol_category">التحكم في الإصدارات</string>
+    <string name="title_rootfeatures_category">خصائص الجذر</string>
 </resources>

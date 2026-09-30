@@ -3174,6 +3174,7 @@
     <string name="project_save_changes">حفظ التغييرات</string>
     <string name="project_settings_hint_app_class">اسم كلاس التطبيق (Application class)</string>
     <string name="project_settings_hint_min_sdk">أدنى إصدار SDK</string>
+    <string name="project_settings_hint_comple_sdk">أصدار المجمع SDK</string>
     <string name="project_settings_hint_target_sdk">إصدار SDK المستهدف</string>
     <string name="project_settings_material_components">استخدام MaterialComponents</string>
     <string name="project_settings_material_components_desc">سيستبدل هذا مثلاً Button بـ MaterialButton، كن حذراً!</string>

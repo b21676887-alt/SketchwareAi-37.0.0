@@ -4091,6 +4091,7 @@ Do you want to continue?</string>
     <string name="project_save_changes">Save changes</string>
     <string name="project_settings_hint_app_class">Application class name</string>
     <string name="project_settings_hint_min_sdk">Minimum SDK version</string>
+    <string name="project_settings_hint_comple_sdk">Compile SDK version</string>
     <string name="project_settings_hint_target_sdk">Target SDK version</string>
     <string name="project_settings_material_components">Use MaterialComponents</string>
     <string name="project_settings_material_components_desc">This will replace e.g. Button with MaterialButton, be careful!</string>

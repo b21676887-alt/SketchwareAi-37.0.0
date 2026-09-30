@@ -3,6 +3,7 @@ package mod.hey.studios.activity.managers.assets;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import androidx.core.content.FileProvider;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -120,10 +121,10 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
 
         var dialog = new MaterialAlertDialogBuilder(this)
                 .setView(dialogBinding.getRoot())
-                .setTitle("Create new")
-                .setMessage("If you're creating a file, make sure to add an extension.")
-                .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
-                .setPositiveButton("Create", null)
+                .setTitle(R.string.manager_create_new_title)
+                .setMessage(Helper.getResString(R.string.create_file_extension_hint))
+                .setNegativeButton(R.string.common_word_cancel, (dialogInterface, i) -> dialogInterface.dismiss())
+                .setPositiveButton(R.string.common_word_create, null)
                 .create();
 
         dialog.setOnShowListener(dialogInterface -> {
@@ -132,7 +133,7 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
                 String editable = Helper.getText(inputText).trim();
 
                 if (editable.isEmpty()) {
-                    SketchwareUtil.toastError("Invalid name");
+                    SketchwareUtil.toastError(Helper.getResString(R.string.error_invalid_name_short));
                     return;
                 }
 
@@ -142,12 +143,12 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
                 } else if (checkedChipId == R.id.chip_folder) {
                     FileUtil.makeDir(new File(current_path, editable).getAbsolutePath());
                 } else {
-                    SketchwareUtil.toast("Select a file type");
+                    SketchwareUtil.toast(Helper.getResString(R.string.toast_select_file_type));
                     return;
                 }
 
                 refresh();
-                SketchwareUtil.toast("File was created successfully");
+                SketchwareUtil.toast(Helper.getResString(R.string.toast_file_created));
                 dialogInterface.dismiss();
             });
         });
@@ -166,7 +167,7 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
         FilePickerOptions options = new FilePickerOptions();
         options.setSelectionMode(SelectionMode.BOTH);
         options.setMultipleSelection(true);
-        options.setTitle("Select an asset file");
+        options.setTitle(Helper.getResString(R.string.manager_assets_select_files));
 
         FilePickerCallback callback = new FilePickerCallback() {
             @Override
@@ -176,7 +177,7 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
                         FileUtil.copyDirectory(file, new File(current_path, file.getName()));
                         refresh();
                     } catch (IOException e) {
-                        SketchwareUtil.toastError("Couldn't import file! [" + e.getMessage() + "]");
+                        SketchwareUtil.toastError(String.format(Helper.getResString(R.string.error_import_file), e.getMessage()));
                     }
                 }
             }
@@ -191,14 +192,14 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
         var inputText = dialogBinding.inputText;
 
         var dialog = new MaterialAlertDialogBuilder(this)
-                .setTitle("Rename " + assetsAdapter.getFileName(position))
+                .setTitle(String.format(Helper.getResString(R.string.manager_rename_title), assetsAdapter.getFileName(position)))
                 .setView(dialogBinding.getRoot())
-                .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
-                .setPositiveButton("Rename", (dialogInterface, i) -> {
+                .setNegativeButton(R.string.common_word_cancel, (dialogInterface, i) -> dialogInterface.dismiss())
+                .setPositiveButton(R.string.common_word_rename, (dialogInterface, i) -> {
                     if (!Helper.getText(inputText).isEmpty()) {
                         FileUtil.renameFile(assetsAdapter.getItem(position), new File(current_path, Helper.getText(inputText)).getAbsolutePath());
                         refresh();
-                        SketchwareUtil.toast("Renamed successfully");
+                        SketchwareUtil.toast(Helper.getResString(R.string.toast_renamed_successfully));
                     }
                     dialogInterface.dismiss();
                 })
@@ -214,13 +215,13 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
 
     private void showDeleteDialog(int position) {
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete " + assetsAdapter.getFileName(position) + "?")
-                .setMessage("Are you sure you want to delete this " + (assetsAdapter.isFolder(position) ? "folder" : "file") + "? "
-                        + "This action cannot be undone.")
+                .setTitle(String.format(Helper.getResString(R.string.manager_delete_title), assetsAdapter.getFileName(position)))
+                .setMessage(Helper.getResString(R.string.delete_confirm_format,
+                        getString(assetsAdapter.isFolder(position) ? R.string.common_word_folder : R.string.common_word_file), ""))
                 .setPositiveButton(R.string.common_word_delete, (dialog, which) -> {
                     FileUtil.deleteFile(assetsAdapter.getItem(position));
                     refresh();
-                    SketchwareUtil.toast("Deleted successfully");
+                    SketchwareUtil.toast(Helper.getResString(R.string.toast_deleted_successfully));
                 })
                 .setNegativeButton(R.string.common_word_cancel, null)
                 .create()
@@ -284,6 +285,10 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
                 holder.binding.more.performClick();
                 return false;
             });
+            // Clear previous load to prevent stale images when views are recycled
+            Glide.with(holder.binding.icon.getContext()).clear(holder.binding.icon);
+            holder.binding.icon.setImageDrawable(null);
+
             if (isFolder(position)) {
                 holder.binding.icon.setImageResource(R.drawable.ic_mtrl_folder);
             } else {
@@ -302,11 +307,11 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
                 PopupMenu popupMenu = new PopupMenu(holder.itemView.getContext(), v);
 
                 if (!isFolder(position)) {
-                    popupMenu.getMenu().add(0, 0, 0, "Edit");
+                    popupMenu.getMenu().add(0, 0, 0, Helper.getResString(R.string.common_word_edit));
                 }
 
-                popupMenu.getMenu().add(0, 1, 0, "Rename");
-                popupMenu.getMenu().add(0, 2, 0, "Delete");
+                popupMenu.getMenu().add(0, 1, 0, Helper.getResString(R.string.common_word_rename));
+                popupMenu.getMenu().add(0, 2, 0, Helper.getResString(R.string.common_word_delete));
 
                 popupMenu.setOnMenuItemClickListener(itemMenu -> {
                     switch (itemMenu.getItemId()) {
@@ -352,12 +357,15 @@ public class ManageAssetsActivity extends BaseAppCompatActivity {
 
                 startActivity(launchIntent);
             } else {
-                Intent viewIntent = new Intent(Intent.ACTION_VIEW);
-
-                viewIntent.setDataAndType(Uri.fromFile(new File(getItem(position))), "*/*");
-                viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                startActivity(viewIntent);
+                try {
+                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                    File file = new File(getItem(position));
+                    Uri uri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".provider", file);
+                    viewIntent.setDataAndType(uri, "*/*");
+                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(viewIntent);
+                } catch (android.content.ActivityNotFoundException ignored) {
+                }
             }
         }
 

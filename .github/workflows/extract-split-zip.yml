@@ -1,58 +1,55 @@
-name: Extract Split ZIP Archive
+name: Extract Backup 7z Split Archive
 
 on:
   push:
+    branches:
+      - '**' # يعمل عند الرفع على أي فرع (main, dev, إلخ)
     paths:
-      - '**.7z.*'
-      - '.github/workflows/extract-split-zip.yml'
+      - '**/app.7z.*' # يعمل عند رفع أجزاء app.7z.001, app.7z.002 ... إلخ
   workflow_dispatch:
-    inputs:
-      archive_prefix:
-        description: 'اسم بادئة الملف المضغوط (مثال: app.7z)'
-        required: false
-        default: 'app.7z'
 
 jobs:
   extract:
-    name: Combine and Extract Split ZIP
+    name: Extract Split 7z Files
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Install Extraction Tools
+      - name: Install 7-Zip
         run: |
           sudo apt-get update
           sudo apt-get install -y p7zip-full
 
-      - name: Combine and Extract Archive
-        shell: bash
+      - name: Extract Split 7z Archive
         run: |
-          # تحديد بادئة الملف (من المدخلات اليدوية أو افتراضيًا app.7z)
-          ARCHIVE_PREFIX="${{ github.event.inputs.archive_prefix || 'app.7z' }}"
+          # البحث عن الجزء الأول من الملف المضغوط أينما وجد
+          FIRST_PART=$(find . -maxdepth 2 -name "app.7z.001" | head -n 1)
           
-          echo "البحث عن أجزاء الملف المضغوط بالبادئة: ${ARCHIVE_PREFIX}"
-          
-          # التحقق من وجود الأجزاء
-          if ls ${ARCHIVE_PREFIX}.* 1> /dev/null 2>&1; then
-            echo "تم العثور على الأجزاء التالية:"
-            ls -1 ${ARCHIVE_PREFIX}.*
+          if [ -n "$FIRST_PART" ]; then
+            TARGET_DIR=$(dirname "$FIRST_PART")
+            BASENAME=$(basename "$FIRST_PART" .001)
             
-            # إنشاء مجلد extrazip في المسار الرئيسي
-            mkdir -p ./extrazip
+            echo "Extracting $FIRST_PART into $TARGET_DIR..."
             
-            # فك الضغط إلى مجلد extrazip
-            7z x "${ARCHIVE_PREFIX}.001" -o./extrazip -y
+            # فك الضغط باستخدام 7z إلى المجلد المستهدف
+            7z x "$FIRST_PART" -o"$TARGET_DIR" -y
             
-            echo "تم استخراج الملفات بنجاح إلى المجلد extrazip."
+            echo "Removing split archive parts..."
+            # حذف كافة الأجزاء المقسمة التابعة للملف بعد فك الضغط بنجاح
+            rm -f "$TARGET_DIR/$BASENAME".*
+            
+            echo "Extracted successfully and removed split parts."
           else
-            echo "خطأ: لم يتم العثور على أي ملفات تطابق البادئة ${ARCHIVE_PREFIX}.*"
-            exit 1
+            echo "Warning: app.7z.001 not found in workspace."
           fi
 
-      - name: Upload Extracted Files Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: extracted-contents
-          path: ./extrazip
+      - name: Commit and Push Unzipped Files
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "chore: Extract app.7z split contents [skip ci]" || echo "No changes to commit"
+          git push

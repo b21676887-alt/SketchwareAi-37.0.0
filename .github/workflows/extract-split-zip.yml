@@ -3,7 +3,7 @@ name: Extract Split ZIP Archive
 on:
   push:
     paths:
-      - '**.zip.*'
+      - '**.7z.*'
       - '.github/workflows/extract-split-zip.yml'
   workflow_dispatch:
     inputs:
@@ -39,13 +39,10 @@ jobs:
             echo "تم العثور على الأجزاء التالية:"
             ls -1 ${ARCHIVE_PREFIX}.*
             
-            # إنشاء مجلد للمخرجات المستخرجة
-            mkdir -p extracted_files
+            # فك الضغط مباشرة إلى المسار الرئيسي للمستودع (./)
+            7z x "${ARCHIVE_PREFIX}.001" -o./ -y
             
-            # فك الضغط مباشرة من الجزء الأول باستخدام 7z
-            7z x "${ARCHIVE_PREFIX}.001" -o./extracted_files/ -y
-            
-            echo "تم استخراج الملفات بنجاح إلى مجلد extracted_files."
+            echo "تم استخراج الملفات بنجاح إلى المسار الرئيسي للمستودع."
           else
             echo "خطأ: لم يتم العثور على أي ملفات تطابق البادئة ${ARCHIVE_PREFIX}.*"
             exit 1
@@ -55,4 +52,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: extracted-contents
-          path: ./extracted_files/
+          path: ./

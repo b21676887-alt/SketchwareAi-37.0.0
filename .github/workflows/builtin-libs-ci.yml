@@ -50,10 +50,11 @@ jobs:
               cp -a "$dir/." "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
             done
           fi
+       export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+        # Accept SDK licenses; ignore broken pipe from `yes`
+         yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null 2>&1 || true
 
-          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null
           sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;37.0.0" "platforms;android-37"
 
       - name: Set up Python 3

@@ -1,0 +1,58 @@
+name: Extract Split ZIP Archive
+
+on:
+  push:
+    paths:
+      - '**.zip.*'
+      - '.github/workflows/extract-split-zip.yml'
+  workflow_dispatch:
+    inputs:
+      archive_prefix:
+        description: 'اسم بادئة الملف المضغوط (مثال: app.7z)'
+        required: false
+        default: 'app.7z'
+
+jobs:
+  extract:
+    name: Combine and Extract Split ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Extraction Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+
+      - name: Combine and Extract Archive
+        shell: bash
+        run: |
+          # تحديد بادئة الملف (من المدخلات اليدوية أو افتراضيًا app.7z)
+          ARCHIVE_PREFIX="${{ github.event.inputs.archive_prefix || 'app.7z' }}"
+          
+          echo "البحث عن أجزاء الملف المضغوط بالبادئة: ${ARCHIVE_PREFIX}"
+          
+          # التحقق من وجود الأجزاء
+          if ls ${ARCHIVE_PREFIX}.* 1> /dev/null 2>&1; then
+            echo "تم العثور على الأجزاء التالية:"
+            ls -1 ${ARCHIVE_PREFIX}.*
+            
+            # إنشاء مجلد للمخرجات المستخرجة
+            mkdir -p extracted_files
+            
+            # فك الضغط مباشرة من الجزء الأول باستخدام 7z
+            7z x "${ARCHIVE_PREFIX}.001" -o./extracted_files/ -y
+            
+            echo "تم استخراج الملفات بنجاح إلى مجلد extracted_files."
+          else
+            echo "خطأ: لم يتم العثور على أي ملفات تطابق البادئة ${ARCHIVE_PREFIX}.*"
+            exit 1
+          fi
+
+      - name: Upload Extracted Files Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: extracted-contents
+          path: ./extracted_files/

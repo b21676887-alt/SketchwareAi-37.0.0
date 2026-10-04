@@ -1,5 +1,6 @@
 package a.a.a;
 
+import static com.besome.sketch.Config.VAR_DEFAULT_COMPILE_SDK_VERSION;
 import static com.besome.sketch.Config.VAR_DEFAULT_MIN_SDK_VERSION;
 import static com.besome.sketch.Config.VAR_DEFAULT_TARGET_SDK_VERSION;
 import static mod.hey.studios.util.ProjectFile.getDefaultColor;
@@ -295,13 +296,13 @@ public class yq {
     public void generateGradleFiles() {
         fileUtil.b(projectMyscPath + File.separator + "app" + File.separator + "build.gradle",
                 Lx.getBuildGradleString(
-                        projectSettings.getCompileSdkVersion(VAR_DEFAULT_TARGET_SDK_VERSION),
+                        projectSettings.getCompileSdkVersion(VAR_DEFAULT_COMPILE_SDK_VERSION),
                         projectSettings.getMinSdkVersion(),
                         projectSettings.getValue(ProjectSettings.SETTING_TARGET_SDK_VERSION, String.valueOf(VAR_DEFAULT_TARGET_SDK_VERSION)),
                         N,
                         projectSettings.getValue(ProjectSettings.SETTING_ENABLE_VIEWBINDING, ProjectSettings.SETTING_GENERIC_VALUE_FALSE).equals(ProjectSettings.SETTING_GENERIC_VALUE_TRUE)));
         fileUtil.b(projectMyscPath + File.separator + "settings.gradle", Lx.a());
-        fileUtil.b(projectMyscPath + File.separator + "build.gradle", Lx.c("8.12.0", "4.4.3"));
+        fileUtil.b(projectMyscPath + File.separator + "build.gradle", Lx.c("9.4.1", "4.5.0"));
 
         fileUtil.b(projectMyscPath + File.separator + "gradle.properties", """
                 android.enableR8.fullMode=false
@@ -595,6 +596,7 @@ public class yq {
                             N.addPermission(activity.getActivityName(), jq.PERMISSION_ACTIVITY_RECOGNITION);
                     case ComponentBean.COMPONENT_TYPE_WORK_MANAGER -> N.isWorkManagerUsed = true;
                     case ComponentBean.COMPONENT_TYPE_ALARM_MANAGER -> N.isAlarmManagerUsed = true;
+                    case ComponentBean.COMPONENT_TYPE_NOTIFICATION -> N.isNotificationUsed = true;
                     case ComponentBean.COMPONENT_TYPE_BIOMETRIC_MANAGER -> N.isBiometricManagerUsed = true;
                     case ComponentBean.COMPONENT_TYPE_FUSED_LOCATION_MANAGER -> {
                         N.isFusedLocationManagerUsed = true;
@@ -687,6 +689,12 @@ public class yq {
                         case "setImageUrl":
                             N.isGlideUsed = true;
                             N.addPermission(jq.PERMISSION_INTERNET);
+                            break;
+
+                        case "showNotification":
+                        case "createNotificationChannel":
+                        case "requestNotificationPermission":
+                            N.isNotificationUsed = true;
                             break;
 
                         case "webViewLoadUrl":
@@ -841,7 +849,7 @@ public class yq {
             }
         }
 
-        Ix ix = new Ix(N, projectFileManager.b(), builtInLibraryManager);
+        Ix ix = new Ix(N, projectFileManager.b());
         ix.setYq(this);
 
         // Make generated classes viewable
@@ -944,9 +952,7 @@ public class yq {
         }
 
         if (isManifestFile) {
-            ProjectBuilder builder = new ProjectBuilder(SketchApplication.getContext(), this);
-            builder.buildBuiltInLibraryInformation();
-            Ix ix = new Ix(N, projectFileManager.b(), builder.getBuiltInLibraryManager());
+            Ix ix = new Ix(N, projectFileManager.b());
             ix.setYq(this);
             return CommandBlock.applyCommands("AndroidManifest.xml", ix.a(applyCustomManifest));
         }

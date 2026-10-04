@@ -5,6 +5,7 @@ import static dev.aldi.sayuti.block.ExtraBlockFile.getExtraBlockData;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import com.besome.sketch.Config;
 import com.besome.sketch.beans.BlockBean;
 import com.besome.sketch.beans.ComponentBean;
 import com.besome.sketch.beans.ProjectFileBean;
@@ -368,6 +369,9 @@ public class Jx {
             } else {
                 sb.append("setContentView(R.layout.").append(projectFileBean.fileName).append(");").append(EOL);
             }
+            if (targetsEdgeToEdge()) {
+                sb.append(getSystemBarInsetsCode());
+            }
             sb.append("initialize(_savedInstanceState);");
         }
         sb.append(EOL);
@@ -619,7 +623,8 @@ public class Jx {
                     .replaceAll("runOnUiThread\\(new", "getActivity().runOnUiThread(new")
                     .replaceAll(".setLayoutManager\\(new LinearLayoutManager\\(this", ".setLayoutManager(new LinearLayoutManager(getContext()")
                     .replaceAll("getLayoutInflater\\(\\)", "getActivity().getLayoutInflater()")
-                    .replaceAll("getSupportFragmentManager\\(\\)", "getActivity().getSupportFragmentManager()");
+                    .replaceAll("getSupportFragmentManager\\(\\)", "getActivity().getSupportFragmentManager()")
+                    .replace("final android.app.Activity _consentActivity = this;", "final android.app.Activity _consentActivity = getActivity();");
         } else if (buildConfig.g) {
             code = code.replaceAll("getFragmentManager", "getSupportFragmentManager");
         }
@@ -719,6 +724,40 @@ public class Jx {
                 "@Deprecated" + EOL +
                 "public int getDisplayHeightPixels() {" + EOL +
                 "return getResources().getDisplayMetrics().heightPixels;" + EOL +
+                "}" + EOL;
+    }
+
+    /**
+     * Android 15+ always draws apps that target API 35+ edge-to-edge, behind the system bars.
+     */
+    private boolean targetsEdgeToEdge() {
+        try {
+            return Integer.parseInt(settings.getValue(ProjectSettings.SETTING_TARGET_SDK_VERSION,
+                    String.valueOf(Config.VAR_DEFAULT_TARGET_SDK_VERSION))) >= 35;
+        } catch (NumberFormatException e) {
+            return Config.VAR_DEFAULT_TARGET_SDK_VERSION >= 35;
+        }
+    }
+
+    /**
+     * Pads the Activity's content by the system bars (and the keyboard, for adjustResize windows)
+     * so edge-to-edge layouts look like they did before. Only uses framework APIs and an anonymous
+     * class, so it compiles without AppCompat and with any Java language level.
+     */
+    private static String getSystemBarInsetsCode() {
+        return "if (android.os.Build.VERSION.SDK_INT >= 35) {" + EOL +
+                "findViewById(android.R.id.content).setOnApplyWindowInsetsListener(new android.view.View.OnApplyWindowInsetsListener() {" + EOL +
+                "@Override" + EOL +
+                "public android.view.WindowInsets onApplyWindowInsets(android.view.View _view, android.view.WindowInsets _insets) {" + EOL +
+                "int _types = android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout();" + EOL +
+                "if ((getWindow().getAttributes().softInputMode & android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST) == android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE) {" + EOL +
+                "_types |= android.view.WindowInsets.Type.ime();" + EOL +
+                "}" + EOL +
+                "android.graphics.Insets _bars = _insets.getInsets(_types);" + EOL +
+                "_view.setPadding(_bars.left, _bars.top, _bars.right, _bars.bottom);" + EOL +
+                "return _insets;" + EOL +
+                "}" + EOL +
+                "});" + EOL +
                 "}" + EOL;
     }
 

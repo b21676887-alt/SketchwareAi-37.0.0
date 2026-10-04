@@ -25,6 +25,7 @@ import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import mod.hey.studios.util.CompileLogHelper;
 import mod.hey.studios.util.Helper;
@@ -267,8 +268,12 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                         + "Explain the root cause, identify the affected screen or generated source when possible, "
                         + "and give concrete correction steps without modifying the project.\n\n"
                         + logText;
+                
+                String deviceLanguage = Locale.getDefault().getLanguage();
+                String systemInstruction = "You analyze Sketchware Android compile logs. Respond in language code: " + deviceLanguage + ".";
+
                 String response = AiProviderService.getInstance().sendTextMessage(
-                        "You analyze Sketchware Android compile logs. Respond in Brazilian Portuguese.",
+                        systemInstruction,
                         prompt
                 );
                 runOnUiThread(() -> {
@@ -276,7 +281,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                         progressDialog.dismiss();
                     } catch (Exception ignored) {
                     }
-                    showScrollableDialog(getString(R.string.ai_explain_title), limitAiText(response, 300));
+                    showScrollableDialog(getString(R.string.ai_explain_title), response);
                 });
             } catch (IOException e) {
                 runOnUiThread(() -> {

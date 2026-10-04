@@ -16,6 +16,9 @@ jobs:
   build-and-verify:
     name: Build & Verify Built-in Libraries
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/.android-sdk
+      ANDROID_HOME: ${{ github.workspace }}/.android-sdk
 
     steps:
       - name: Checkout repository
@@ -27,12 +30,31 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android Build-Tools & Platform
+      - name: Install Android SDK
+        shell: bash
         run: |
-          sdkmanager "build-tools;37.0.0" "platforms;android-37"
+          set -e
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd /tmp
+
+          curl -fsSL -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools.zip
+
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+
+          if [ -d "$PWD/cmdline-tools" ]; then
+            cp -a "$PWD/cmdline-tools/." "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
+          else
+            # في بعض النسخ تكون المجلد باسم cmdline-tools-linux-XXXX
+            find . -maxdepth 2 -type d -name 'cmdline-tools*' -print -quit | head -n 1 | while read -r dir; do
+              cp -a "$dir/." "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
+            done
+          fi
+
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;37.0.0" "platforms;android-37"
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -43,26 +65,18 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build Built-in Libraries Assets
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           python tools/builtin-libs/build_builtin_libs.py
 
       - name: Verify Resources (AAPT2)
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           python tools/builtin-libs/verify_resources.py
 
       - name: Verify Classes & Dependencies
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           python tools/builtin-libs/verify_classes.py
 
       - name: Verify Generated Code (ECJ Compilation)
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           python tools/builtin-libs/verify_generated_code.py
 

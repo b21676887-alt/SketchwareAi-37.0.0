@@ -39,10 +39,13 @@ jobs:
             echo "تم العثور على الأجزاء التالية:"
             ls -1 ${ARCHIVE_PREFIX}.*
             
-            # فك الضغط مباشرة إلى المسار الرئيسي للمستودع (./)
-            7z x "${ARCHIVE_PREFIX}.001" -o./ -y
+            # إنشاء مجلد extrazip في المسار الرئيسي
+            mkdir -p ./extrazip
             
-            echo "تم استخراج الملفات بنجاح إلى المسار الرئيسي للمستودع."
+            # فك الضغط إلى مجلد extrazip
+            7z x "${ARCHIVE_PREFIX}.001" -o./extrazip -y
+            
+            echo "تم استخراج الملفات بنجاح إلى المجلد extrazip."
           else
             echo "خطأ: لم يتم العثور على أي ملفات تطابق البادئة ${ARCHIVE_PREFIX}.*"
             exit 1
@@ -52,4 +55,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: extracted-contents
-          path: ./
+          path: ./extrazip

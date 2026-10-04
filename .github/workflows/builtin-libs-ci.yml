@@ -41,16 +41,34 @@ jobs:
           set -euxo pipefail
 
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends unzip wget
+          sudo apt-get install -y --no-install-recommends unzip curl ca-certificates
 
           # Ensure SDK root directory exists
           mkdir -p "$ANDROID_HOME/cmdline-tools"
 
           cd "$HOME"
+
           CLI_ZIP="commandlinetools-linux_latest.zip"
 
-          # Download and verify
-          wget -O "$CLI_ZIP" "https://dl.google.com/android/repository/commandlinetools-linux_latest.zip"
+          # Try the standard "latest" alias first; if it fails, discover package from repository metadata
+          CLI_URL="https://dl.google.com/android/repository/$CLI_ZIP"
+
+          # Prefer curl since it fails non-zero on HTTP errors
+          if ! curl -fLo "$CLI_ZIP" "$CLI_URL"; then
+            echo "primary URL failed, attempting to discover current command-line tools package..."
+            PACKAGE_NAME=$(curl -s https://dl.google.com/android/repository/repository2-1.xml \
+              | grep -oP 'commandlinetools-linux[^<]+' | head -n1 || true)
+
+            if [ -z "$PACKAGE_NAME" ]; then
+              echo "::error::Could not find commandlinetools package name in repository metadata"
+              exit 1
+            fi
+
+            CLI_URL="https://dl.google.com/android/repository/$PACKAGE_NAME"
+            echo "discovered package: $CLI_URL"
+            curl -fLo "$CLI_ZIP" "$CLI_URL"
+          fi
+
           if [ ! -s "$CLI_ZIP" ]; then
             echo "::error::Downloaded $CLI_ZIP is missing or empty"
             ls -l "$CLI_ZIP" || true

@@ -30,12 +30,39 @@ jobs:
           java-version: 17
           distribution: temurin
 
-    
-      
+
       - name: Set up Python 3
         uses: actions/setup-python@v6
         with:
           python-version: '3.x'
+
+      - name: Install Android SDK command-line tools and platform/build-tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+
+          # Ensure SDK root directory exists (ANDROID_HOME is set in job env)
+          mkdir -p "$ANDROID_HOME"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+
+          cd "$HOME"
+          CLI_ZIP="commandlinetools-linux_latest.zip"
+
+          # Download command-line tools (uses latest redirecting endpoint)
+          wget -q "https://dl.google.com/android/repository/commandlinetools-linux_latest.zip" -O "$CLI_ZIP"
+          unzip -q "$CLI_ZIP" -d cmdline-tools-tmp
+          mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+          mv cmdline-tools-tmp/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+          rm -rf cmdline-tools-tmp "$CLI_ZIP"
+
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          chmod +x "$SDKMANAGER"
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+
+          # Accept licenses and install required components. Adjust API/build-tools versions if needed.
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5

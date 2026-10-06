@@ -32,7 +32,7 @@ android {
         applicationId = "pro.sketchware"
         namespace = "pro.sketchware"
         //noinspection ExpiredTargetSdkVersion since we don't target getting Sketchware Pro on Google Play.
-        targetSdk = 36
+        targetSdk = 34
         minSdk = 26
         versionCode = 158
         versionName = "8.1 preview"

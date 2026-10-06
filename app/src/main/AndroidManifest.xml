@@ -16,6 +16,18 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
+    <!-- Package visibility (API 30+): launching the projects Sketchware just built and
+         opening links in a browser. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 
 
     <application
@@ -29,7 +41,7 @@
         android:theme="@style/Theme.SketchwarePro"
         android:localeConfig="@xml/locales_config"
         android:usesCleartextTraffic="true"
-        tools:targetApi="p">
+        tools:targetApi="tiramisu">
         <activity
             android:name=".activities.iconcreator.IconCreatorActivity"
             android:exported="false"

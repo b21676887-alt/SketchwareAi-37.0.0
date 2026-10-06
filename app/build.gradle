@@ -11,7 +11,7 @@ apply plugin: "com.google.gms.google-services"
 apply plugin: "com.google.firebase.crashlytics"
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     // Resolve the git hash defensively: the build must not fail when git is not
     // installed or the project was downloaded as a ZIP (no .git directory).
@@ -32,7 +32,7 @@ android {
         applicationId = "pro.sketchware"
         namespace = "pro.sketchware"
         //noinspection ExpiredTargetSdkVersion since we don't target getting Sketchware Pro on Google Play.
-        targetSdk = 28
+        targetSdk = 36
         minSdk = 26
         versionCode = 158
         versionName = "8.1 preview"
@@ -132,7 +132,7 @@ dependencies {
 
     implementation libs.libsu
     implementation libs.insetter
-    implementation 'com.google.android.gms:play-services-ads:25.4.0'
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
     implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
 
     implementation(libs.javaparser.symbol.solver) {
@@ -143,14 +143,14 @@ dependencies {
     if (secrets != null) {
         googleServicesFile.text = secrets
     }
-    implementation platform("com.google.firebase:firebase-bom:34.16.0")
+    implementation platform("com.google.firebase:firebase-bom:34.19.0")
     implementation "com.google.firebase:firebase-crashlytics"
     implementation "com.google.firebase:firebase-analytics"
     implementation "com.google.firebase:firebase-messaging"
     implementation "com.google.firebase:firebase-database"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs_nio:2.1.5"
     testImplementation "junit:junit:4.13.2"
-    testImplementation "org.json:json:20240303"
+    testImplementation "org.json:json:20260814"
 }
 
 tasks.register('createMockGoogleServices') {

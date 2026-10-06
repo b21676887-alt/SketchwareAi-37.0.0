@@ -42,7 +42,7 @@
         android:localeConfig="@xml/locales_config"
         android:extractNativeLibs="true"
         android:usesCleartextTraffic="true"
-        tools:targetApi="36">
+        tools:targetApi="34">
         <activity
             android:name=".activities.iconcreator.IconCreatorActivity"
             android:exported="false"

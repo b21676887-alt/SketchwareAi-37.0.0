@@ -138,7 +138,7 @@ public class ProjectBuilder {
             LogUtil.e(TAG, "Somehow failed to get package info about us!", e);
         }
 
-        aapt2Binary = new File(context.getCacheDir(), "aapt2");
+        aapt2Binary = new File(context.getApplicationInfo().nativeLibraryDir, "libaapt2.so");
         build_settings = new BuildSettings(yqVar.sc_id);
         this.context = context;
         yq = yqVar;
@@ -883,20 +883,10 @@ public class ProjectBuilder {
      * @throws By If anything goes wrong while extracting
      */
     public void maybeExtractAapt2() throws By {
-        var abi = Build.SUPPORTED_ABIS[0];
-        try {
-            if (hasFileChanged("aapt/aapt2-" + abi, aapt2Binary.getAbsolutePath())) {
-                Os.chmod(aapt2Binary.getAbsolutePath(), S_IRUSR | S_IWUSR | S_IXUSR);
-            }
-        } catch (Exception e) {
-            LogUtil.e(TAG, "Failed to extract AAPT2 binaries", e);
-            // noinspection ConstantValue: the bytecode's lying
-            throw new By(
-                    e instanceof FileNotFoundException fileNotFoundException ?
-                            "Looks like the device's architecture (" + abi + ") isn't supported.\n"
-                                    + Log.getStackTraceString(fileNotFoundException)
-                            : "Couldn't extract AAPT2 binaries! Message: " + e.getMessage()
-            );
+        if (!aapt2Binary.isFile() || !aapt2Binary.canExecute()) {
+            LogUtil.e(TAG, "AAPT2 isn't available at " + aapt2Binary);
+            throw new By("Looks like the device's architecture (" + Build.SUPPORTED_ABIS[0] + ") isn't supported: "
+                    + aapt2Binary + " is missing or not executable.");
         }
     }
 

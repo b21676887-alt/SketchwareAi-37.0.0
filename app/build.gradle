@@ -11,7 +11,7 @@ apply plugin: "com.google.gms.google-services"
 apply plugin: "com.google.firebase.crashlytics"
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     // Resolve the git hash defensively: the build must not fail when git is not
     // installed or the project was downloaded as a ZIP (no .git directory).
@@ -32,7 +32,7 @@ android {
         applicationId = "pro.sketchware"
         namespace = "pro.sketchware"
         //noinspection ExpiredTargetSdkVersion since we don't target getting Sketchware Pro on Google Play.
-        targetSdk = 34
+        targetSdk = 36
         minSdk = 26
         versionCode = 158
         versionName = "8.1 preview"
